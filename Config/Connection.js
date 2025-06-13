@@ -1,17 +1,18 @@
+//live db
 import mysql from "mysql2";
 import dotenv from "dotenv";
 
 dotenv.config();
 
 const dbConfig = {
-  host: process.env.DB_HOST,
-  port: process.env.DB_PORT,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME,
-  charset: process.env.DB_CHARSET,
+  host: "shinkansen.proxy.rlwy.net",
+  port: 36724,
+  user: "root",
+  password: "knXfjVtnqprCIfozUaLymhPfJuNSfwoR",
+  database: "railway",
+  charset: "utf8mb4",
   multipleStatements: false,
-  timezone: process.env.DB_TIMEZONE,
+  timezone: "Z",
 };
 
 
@@ -28,3 +29,4 @@ pool.promise()
   });
 
 export default pool.promise();
+
