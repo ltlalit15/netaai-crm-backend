@@ -10,6 +10,8 @@ import DepartmentRouter from "./Routers/DepartmentRouter.js";
 import ContractJobRouter from "./Routers/ContractJobRouter.js";
 import ProductRouter from "./Routers/ProductRouter.js";
 import ServiceRouter from "./Routers/ServiceRouter.js";
+import InvoiceRouter from "./Routers/InvoiceRouter.js";
+import BillRouter from "./Routers/BillRouter.js";
 
 const router = Router();
 
@@ -24,5 +26,7 @@ router.use("/api", DepartmentRouter);
 router.use("/api", ContractJobRouter);
 router.use("/api", ServiceRouter);
 router.use("/api", ProductRouter);
+router.use("/api", InvoiceRouter);
+router.use("/api", BillRouter);
 
 export default router;
