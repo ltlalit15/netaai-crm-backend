@@ -1,5 +1,6 @@
 import Controllers from "../Models/Model.js";
 import { successResponse, errorResponse } from "../Utils/responseHandler.js";
+import bcrypt from "bcrypt";
 
 const ClientTable = new Controllers("clients");
 
@@ -24,12 +25,14 @@ class ClientController {
                 zip_code,
                 country,
                 notes,
-                address_type
+                address_type,
+                password
             } = req.body;
 
             if (!client_name) {
                 return errorResponse(res, 400, "client_name is required.");
             }
+            const hashedPassword = await bcrypt.hash(password, 10);
 
             const data = {
                 client_name,
@@ -47,7 +50,8 @@ class ClientController {
                 zip_code,
                 country,
                 notes,
-                address_type
+                address_type,
+                password:hashedPassword
             };
 
             const result = await ClientTable.create(data);

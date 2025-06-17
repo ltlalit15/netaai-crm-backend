@@ -12,6 +12,7 @@ import ProductRouter from "./Routers/ProductRouter.js";
 import ServiceRouter from "./Routers/ServiceRouter.js";
 import InvoiceRouter from "./Routers/InvoiceRouter.js";
 import BillRouter from "./Routers/BillRouter.js";
+import RoleRouter from "./Routers/RoleRouter.js";
 
 const router = Router();
 
@@ -28,5 +29,6 @@ router.use("/api", ServiceRouter);
 router.use("/api", ProductRouter);
 router.use("/api", InvoiceRouter);
 router.use("/api", BillRouter);
+router.use("/api", RoleRouter);
 
 export default router;
