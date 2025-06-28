@@ -65,9 +65,9 @@ class ContractController {
 
         return successResponse(res, 201, "Contract created successfully", {
             ...inserted,
-            subtotal,
-            gst_amount,
-            total
+          //  subtotal,
+          //  gst_amount,
+          //  total
         });
 
     } catch (error) {
