@@ -8,7 +8,7 @@ class ProposalController {
     static async createProposal(req, res) {
         try {
             const {
-                job_name,
+                job_name,                
                 client_name,
                 job_type,
                 bid_due_date,
@@ -121,6 +121,7 @@ class ProposalController {
         const { id } = req.params;
         const {
             job_name,
+            stage,
             client_name,
             job_type,
             bid_due_date,
@@ -141,6 +142,7 @@ class ProposalController {
 
             const updatedProposal = await ProposalTable.update(id, {
                 job_name,
+                stage,
                 client_name,
                 job_type,
                 bid_due_date,
