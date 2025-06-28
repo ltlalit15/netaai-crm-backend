@@ -162,6 +162,40 @@ static async getContractById(req, res) {
   }
 }
 
+    static async getContractsByProposalId(req, res) {
+  try {
+    const { proposal_id } = req.params;
+
+    const contracts = await ContractTable.getByProposalId(proposal_id);
+
+    if (!contracts || contracts.length === 0) {
+      return errorResponse(res, 404, "No contracts found for this proposal");
+    }
+
+    const enrichedContracts = contracts.map(contract => {
+      const items = JSON.parse(contract.items || "[]");
+
+      const cleanedItems = items.map(item => ({
+        item_description: item.item_description,
+        quantity: item.quantity,
+        unit_price: item.unit_price,
+        taxable: item.taxable
+      }));
+
+      return {
+        ...contract,
+        items: cleanedItems
+      };
+    });
+
+    return successResponse(res, 200, "Contracts fetched by proposal_id", enrichedContracts);
+  } catch (error) {
+    console.error("❌ Error in getContractsByProposalId:", error);
+    return errorResponse(res, 500, error.message);
+  }
+}
+
+
 
     // UPDATE
     // UPDATE
