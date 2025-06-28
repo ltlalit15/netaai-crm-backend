@@ -81,8 +81,6 @@ class ContractController {
 
 
 
-
-
     // READ ALL
   // READ ALL
 static async getAllContracts(req, res) {
@@ -104,12 +102,15 @@ static async getAllContracts(req, res) {
         return {
           item_description: item.item_description,
           quantity: item.quantity,
-          unit_price: item.unit_price
+          unit_price: item.unit_price,
+          taxable: item.taxable // ✅ INCLUDE taxable here
         };
       });
 
       const taxRate = parseFloat(contract.applicable_tax_rate?.match(/\d+/)?.[0] || 0);
-      if (contract.taxable === "true") {
+      const anyTaxable = cleanedItems.some(item => item.taxable === "true");
+
+      if (anyTaxable) {
         gst_amount = (subtotal * taxRate) / 100;
       }
 
@@ -117,7 +118,10 @@ static async getAllContracts(req, res) {
 
       return {
         ...contract,
-        items: cleanedItems
+        items: cleanedItems,
+        subtotal,
+        gst_amount,
+        total
       };
     });
 
@@ -126,6 +130,7 @@ static async getAllContracts(req, res) {
     return errorResponse(res, 500, error.message);
   }
 }
+
 
 
     // READ BY ID
@@ -144,7 +149,8 @@ static async getContractById(req, res) {
     const cleanedItems = items.map(item => ({
       item_description: item.item_description,
       quantity: item.quantity,
-      unit_price: item.unit_price
+      unit_price: item.unit_price,
+      taxable: item.taxable // ✅ INCLUDE taxable
     }));
 
     return successResponse(res, 200, "Contract fetched", {
@@ -162,23 +168,21 @@ static async getContractById(req, res) {
 static async updateContract(req, res) {
   try {
     const { id } = req.params;
+
     const {
+      proposal_id,
       client_name,
       po_number,
       contract_number,
       start_date,
       end_date,
       payment_terms,
-      taxable,
       applicable_tax_rate,
       comments,
       items
     } = req.body;
 
-    if (!id) {
-      return errorResponse(res, 400, "Contract ID is required");
-    }
-
+    // Validation
     if (!Array.isArray(items) || items.length === 0) {
       return errorResponse(res, 400, "At least one item is required");
     }
@@ -187,6 +191,7 @@ static async updateContract(req, res) {
     const taxRate = parseFloat(applicable_tax_rate.match(/\d+/)?.[0] || 0);
     const processedItems = [];
 
+    // Process items
     for (const item of items) {
       const qty = parseFloat(item.quantity);
       const price = parseFloat(item.unit_price);
@@ -197,45 +202,46 @@ static async updateContract(req, res) {
         item_description: item.item_description,
         quantity: item.quantity,
         unit_price: item.unit_price,
-        itemSubtotal // used internally only
+        taxable: item.taxable
       });
     }
 
-    const gst_amount = taxable === "true" ? (subtotal * taxRate) / 100 : 0;
+    // Check if any item is taxable
+    const anyTaxable = processedItems.some(item => item.taxable === "true");
+    const gst_amount = anyTaxable ? (subtotal * taxRate) / 100 : 0;
     const total = subtotal + gst_amount;
 
-    const dataToUpdate = {
+    // Build update data
+    const data = {
+      proposal_id,
       client_name,
       po_number,
       contract_number,
       start_date,
       end_date,
       payment_terms,
-      taxable,
       applicable_tax_rate,
       comments,
       items: JSON.stringify(processedItems)
+      // ⛔ Don't include subtotal/gst_amount/total unless they are in the DB
     };
 
-    const updateResult = await ContractTable.update(id, dataToUpdate);
-    if (!updateResult) {
-      return errorResponse(res, 404, "Contract not found or update failed");
+    const result = await ContractTable.update(id, data);
+
+    if (result.affectedRows === 0) {
+      return errorResponse(res, 404, "Contract not found");
     }
 
     const updated = await ContractTable.getById(id);
-    const parsedItems = JSON.parse(updated.items || "[]");
-
-    const cleanedItems = parsedItems.map(item => ({
-      item_description: item.item_description,
-      quantity: item.quantity,
-      unit_price: item.unit_price
-    }));
+    const finalItems = JSON.parse(updated.items);
 
     return successResponse(res, 200, "Contract updated successfully", {
       ...updated,
-      items: cleanedItems
+      items: finalItems
     });
+
   } catch (error) {
+    console.error("❌ Error in updateContract:", error);
     return errorResponse(res, 500, error.message);
   }
 }
