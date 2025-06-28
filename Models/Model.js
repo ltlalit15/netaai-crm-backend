@@ -69,6 +69,24 @@ class BaseModel {
     return rows;
   }
 
+  async updateStage(id, data) {
+    // ✅ Defensive check for empty update object
+    if (!data || typeof data !== 'object' || Object.keys(data).length === 0) {
+      throw new Error('Update data must be a non-empty object');
+    }
+
+    // ✅ Dynamically build SET part
+    const fields = Object.keys(data).map(key => `${key} = ?`).join(', ');
+    const values = Object.values(data);
+
+    const query = `UPDATE ${this.tableName} SET ${fields} WHERE id = ?`;
+
+    // ✅ Execute with values
+    const [result] = await db.query(query, [...values, id]);
+    return result;
+  }
+
+
 
   async getAllStudentsWithCourses() {
     const [result] = await db.query(`
