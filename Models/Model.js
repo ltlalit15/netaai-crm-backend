@@ -87,7 +87,7 @@ class BaseModel {
   }
 
  async getByProposalId(proposal_id) {
-  const [rows] = await pool.query(
+  const [rows] = await db.query(
     "SELECT * FROM contracts WHERE proposal_id = ?",
     [proposal_id]
   );
