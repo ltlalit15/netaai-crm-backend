@@ -190,9 +190,8 @@ class ProposalController {
             return errorResponse(res, 500, error.message);
         }
     }
-}
 
-static async updateProposalStage(req, res) {
+    static async updateProposalStage(req, res) {
     const { id } = req.params;
     const { stage } = req.body;
 
@@ -225,6 +224,9 @@ static async updateProposalStage(req, res) {
         return errorResponse(res, 500, error.message);
     }
 }
+}
+
+
 
 
 
