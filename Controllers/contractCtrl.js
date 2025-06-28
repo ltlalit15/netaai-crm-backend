@@ -6,74 +6,83 @@ const ContractTable = new Controllers("contracts");
 class ContractController {
     
 
-    static async createContract(req, res) {
-    try {
-        const {
-            client_name,
-            po_number,
-            contract_number,
-            start_date,
-            end_date,
-            payment_terms,
-            taxable,
-            applicable_tax_rate,
-            comments,
-            items
-        } = req.body;
+  static async createContract(req, res) {
+  try {
+    const {
+      client_name,
+      po_number,
+      contract_number,
+      start_date,
+      end_date,
+      payment_terms,
+      taxable,
+      applicable_tax_rate,
+      comments,
+      items
+    } = req.body;
 
-        if (!Array.isArray(items) || items.length === 0) {
-            return errorResponse(res, 400, "At least one item is required");
-        }
-
-        let subtotal = 0;
-        const taxRate = parseFloat(applicable_tax_rate.match(/\d+/)?.[0] || 0);
-        const processedItems = [];
-
-        for (const item of items) {
-            const qty = parseFloat(item.quantity);
-            const price = parseFloat(item.unit_price);
-            const itemSubtotal = qty * price;
-            subtotal += itemSubtotal;
-
-            processedItems.push({
-                item_description: item.item_description,
-                quantity: item.quantity,
-                unit_price: item.unit_price,
-                itemSubtotal
-            });
-        }
-
-        const gst_amount = taxable === "true" ? (subtotal * taxRate) / 100 : 0;
-        const total = subtotal + gst_amount;
-
-        const data = {
-            client_name,
-            po_number,
-            contract_number,
-            start_date,
-            end_date,
-            payment_terms,
-            taxable,
-            applicable_tax_rate,
-            comments,
-            items: JSON.stringify(processedItems) // Store as JSON string
-        };
-
-        const result = await ContractTable.create(data);
-        const inserted = await ContractTable.getById(result.insertId);
-        inserted.items = JSON.parse(inserted.items);
-
-        return successResponse(res, 201, "Contract created successfully", {
-            ...inserted,
-          //  subtotal,
-          //  gst_amount,
-          //  total
-        });
-
-    } catch (error) {
-        return errorResponse(res, 500, error.message);
+    if (!Array.isArray(items) || items.length === 0) {
+      return errorResponse(res, 400, "At least one item is required");
     }
+
+    let subtotal = 0;
+    const taxRate = parseFloat(applicable_tax_rate.match(/\d+/)?.[0] || 0);
+    const processedItems = [];
+
+    for (const item of items) {
+      const qty = parseFloat(item.quantity);
+      const price = parseFloat(item.unit_price);
+      const itemSubtotal = qty * price;
+      subtotal += itemSubtotal;
+
+      processedItems.push({
+        item_description: item.item_description,
+        quantity: item.quantity,
+        unit_price: item.unit_price,
+        itemSubtotal // used internally, stripped later
+      });
+    }
+
+    const gst_amount = taxable === "true" ? (subtotal * taxRate) / 100 : 0;
+    const total = subtotal + gst_amount;
+
+    const data = {
+      client_name,
+      po_number,
+      contract_number,
+      start_date,
+      end_date,
+      payment_terms,
+      taxable,
+      applicable_tax_rate,
+      comments,
+      items: JSON.stringify(processedItems)
+    };
+
+    const result = await ContractTable.create(data);
+    const inserted = await ContractTable.getById(result.insertId);
+
+    // Strip `itemSubtotal` from response items
+    const parsedItems = JSON.parse(inserted.items);
+    const itemsWithoutSubtotal = parsedItems.map(({ item_description, quantity, unit_price }) => ({
+      item_description,
+      quantity,
+      unit_price
+    }));
+
+    // Remove subtotal, gst_amount, total from response
+    const { itemSubtotal, ...cleanedInserted } = inserted;
+
+    return successResponse(res, 201, "Contract created successfully", {
+      ...cleanedInserted,
+      items: itemsWithoutSubtotal
+    });
+  } catch (error) {
+    console.error("❌ Error in createContract:", error);
+    return errorResponse(res, 500, error.message);
+  }
 }
+
 
 
     // READ ALL
