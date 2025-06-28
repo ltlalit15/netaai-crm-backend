@@ -192,6 +192,41 @@ class ProposalController {
     }
 }
 
+static async updateProposalStage(req, res) {
+    const { id } = req.params;
+    const { stage } = req.body;
+
+    try {
+        if (!stage) {
+            return errorResponse(res, 400, "Stage is required");
+        }
+
+        const proposal = await ProposalTable.getById(id);
+        if (!proposal) {
+            return errorResponse(res, 404, "Proposal not found");
+        }
+
+        await ProposalTable.update(id, { stage });
+
+        const updated = await ProposalTable.getById(id);
+
+        // Format tags if needed
+        const formattedProposal = {
+            ...updated,
+            tags: Array.isArray(updated.tags)
+                ? updated.tags
+                : typeof updated.tags === "string"
+                    ? updated.tags.split(",").map(t => t.trim())
+                    : []
+        };
+
+        return successResponse(res, 200, "Stage updated successfully", formattedProposal);
+    } catch (error) {
+        return errorResponse(res, 500, error.message);
+    }
+}
+
+
 
 
 export default ProposalController;
