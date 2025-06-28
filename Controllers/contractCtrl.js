@@ -9,18 +9,19 @@ class ContractController {
   static async createContract(req, res) {
   try {
     const {
+      proposal_id,
       client_name,
       po_number,
       contract_number,
       start_date,
       end_date,
       payment_terms,
-      taxable,
       applicable_tax_rate,
       comments,
       items
     } = req.body;
 
+    // Validation
     if (!Array.isArray(items) || items.length === 0) {
       return errorResponse(res, 400, "At least one item is required");
     }
@@ -29,6 +30,7 @@ class ContractController {
     const taxRate = parseFloat(applicable_tax_rate.match(/\d+/)?.[0] || 0);
     const processedItems = [];
 
+    // Process each item
     for (const item of items) {
       const qty = parseFloat(item.quantity);
       const price = parseFloat(item.unit_price);
@@ -38,22 +40,25 @@ class ContractController {
       processedItems.push({
         item_description: item.item_description,
         quantity: item.quantity,
-        unit_price: item.unit_price,
-        itemSubtotal // used internally, stripped later
+        unit_price: item.unit_price
+        // ✅ Don't include `itemSubtotal` in response
       });
     }
 
-    const gst_amount = taxable === "true" ? (subtotal * taxRate) / 100 : 0;
+    // Check if any item is taxable
+    const anyTaxable = items.some(item => item.taxable === "true");
+    const gst_amount = anyTaxable ? (subtotal * taxRate) / 100 : 0;
     const total = subtotal + gst_amount;
 
     const data = {
+      proposal_id, // ✅ NEW
       client_name,
       po_number,
       contract_number,
       start_date,
       end_date,
       payment_terms,
-      taxable,
+      taxable: anyTaxable ? "true" : "false", // Store final flag
       applicable_tax_rate,
       comments,
       items: JSON.stringify(processedItems)
@@ -61,27 +66,20 @@ class ContractController {
 
     const result = await ContractTable.create(data);
     const inserted = await ContractTable.getById(result.insertId);
+    const finalItems = JSON.parse(inserted.items);
 
-    // Strip `itemSubtotal` from response items
-    const parsedItems = JSON.parse(inserted.items);
-    const itemsWithoutSubtotal = parsedItems.map(({ item_description, quantity, unit_price }) => ({
-      item_description,
-      quantity,
-      unit_price
-    }));
-
-    // Remove subtotal, gst_amount, total from response
-    const { itemSubtotal, ...cleanedInserted } = inserted;
-
+    // ✅ Return clean response
     return successResponse(res, 201, "Contract created successfully", {
-      ...cleanedInserted,
-      items: itemsWithoutSubtotal
+      ...inserted,
+      items: finalItems
     });
+
   } catch (error) {
     console.error("❌ Error in createContract:", error);
     return errorResponse(res, 500, error.message);
   }
 }
+
 
 
 
