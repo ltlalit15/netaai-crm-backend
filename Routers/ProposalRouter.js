@@ -9,5 +9,6 @@ router.get('/proposals', PurchaseOrderController.getAllProposals);
 router.get('/proposals/:id', PurchaseOrderController.getProposalById);
 router.patch('/proposals/:id', PurchaseOrderController.updateProposal);
 router.delete('/proposals/:id', PurchaseOrderController.deleteProposal);
+router.patch('/proposals/:id', PurchaseOrderController.updateProposalStage);
 
 export default router;
