@@ -4,70 +4,7 @@ import { successResponse, errorResponse } from "../Utils/responseHandler.js";
 const ContractTable = new Controllers("contracts");
 
 class ContractController {
-    // CREATE
-    // static async createContract(req, res) {
-    //     try {
-    //         const {
-    //             client_name,
-    //             po_number,
-    //             contract_number,
-    //             start_date,
-    //             end_date,
-    //             payment_terms,
-    //             item_description,
-    //             quantity,
-    //             unit_price,
-    //             taxable,
-    //             applicable_tax_rate,
-    //             comments
-    //         } = req.body;
-
-          
-
-    //          // Parse numbers
-    //         const qty = parseFloat(quantity);
-    //         const price = parseFloat(unit_price);
-    //         const taxRate = parseFloat(applicable_tax_rate.match(/\d+/)?.[0] || 0);
-
-    //         // Calculate values
-    //         const subtotal = qty * price;
-    //         const gst_amount = taxable === "true" ? (subtotal * taxRate) / 100 : 0;
-    //         const total = subtotal + gst_amount;
-
-    //         const data = {
-    //             client_name,
-    //             po_number,
-    //             contract_number,
-    //             start_date,
-    //             end_date,
-    //             payment_terms,
-    //             item_description,
-    //             quantity,
-    //             unit_price,
-    //             taxable,
-    //             applicable_tax_rate,
-    //             comments
-    //         };
-
-    //         const result = await ContractTable.create(data);
-    //         const inserted = await ContractTable.getById(result.insertId);
-
-    //           // Include totals in response only
-    //         const responseWithCalc = {
-    //             ...inserted,
-    //             subtotal,
-    //             gst_amount,
-    //             total
-    //         };
-
-    //         return successResponse(res, 201, "Contract created successfully", responseWithCalc);
-    //     } catch (error) {
-    //         return errorResponse(res, 500, error.message);
-    //     }
-    // }
-
-
-
+    
 
     static async createContract(req, res) {
     try {
