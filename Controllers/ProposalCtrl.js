@@ -28,6 +28,7 @@ class ProposalController {
 
             const data = {
                 job_name,
+                stage: "Lead",
                 client_name,
                 job_type,
                 bid_due_date,
