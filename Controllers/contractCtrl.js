@@ -40,8 +40,8 @@ class ContractController {
       processedItems.push({
         item_description: item.item_description,
         quantity: item.quantity,
-        unit_price: item.unit_price
-        // ✅ Don't include `itemSubtotal` in response
+        unit_price: item.unit_price,
+        taxable: item.taxable  // ✅ Fixed missing comma
       });
     }
 
@@ -51,24 +51,25 @@ class ContractController {
     const total = subtotal + gst_amount;
 
     const data = {
-      proposal_id, // ✅ NEW
+      proposal_id,
       client_name,
       po_number,
       contract_number,
       start_date,
       end_date,
       payment_terms,
-      taxable: anyTaxable ? "true" : "false", // Store final flag
       applicable_tax_rate,
       comments,
-      items: JSON.stringify(processedItems)
+      items: JSON.stringify(processedItems),
+      subtotal,
+      gst_amount,
+      total
     };
 
     const result = await ContractTable.create(data);
     const inserted = await ContractTable.getById(result.insertId);
     const finalItems = JSON.parse(inserted.items);
 
-    // ✅ Return clean response
     return successResponse(res, 201, "Contract created successfully", {
       ...inserted,
       items: finalItems
@@ -79,6 +80,7 @@ class ContractController {
     return errorResponse(res, 500, error.message);
   }
 }
+
 
 
 
