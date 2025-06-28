@@ -86,6 +86,14 @@ class BaseModel {
     return result;
   }
 
+ async getByProposalId(proposal_id) {
+  const [rows] = await pool.query(
+    "SELECT * FROM contracts WHERE proposal_id = ?",
+    [proposal_id]
+  );
+  return rows;
+} 
+
 
 
   async getAllStudentsWithCourses() {
