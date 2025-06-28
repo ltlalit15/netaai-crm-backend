@@ -162,7 +162,7 @@ static async getContractById(req, res) {
   }
 }
 
-    static async getContractsByProposalId(req, res) {
+   static async getContractsByProposalId(req, res) {
   try {
     const { proposal_id } = req.params;
 
@@ -182,8 +182,17 @@ static async getContractById(req, res) {
         taxable: item.taxable
       }));
 
+      // 🧹 Remove unwanted item-level fields from top-level
+      const {
+        item_description,
+        quantity,
+        unit_price,
+        taxable,
+        ...cleanContract
+      } = contract;
+
       return {
-        ...contract,
+        ...cleanContract,
         items: cleanedItems
       };
     });
@@ -194,6 +203,7 @@ static async getContractById(req, res) {
     return errorResponse(res, 500, error.message);
   }
 }
+
 
 
 
