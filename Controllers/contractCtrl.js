@@ -60,10 +60,8 @@ class ContractController {
       payment_terms,
       applicable_tax_rate,
       comments,
-      items: JSON.stringify(processedItems),
-      subtotal,
-      gst_amount,
-      total
+      items: JSON.stringify(processedItems)
+     
     };
 
     const result = await ContractTable.create(data);
