@@ -86,6 +86,14 @@ class BaseModel {
     return result;
   }
 
+   async updateStatus(id, status) {
+    if (!status || typeof status !== 'string' || status.trim() === '') {
+      throw new Error("Status is required and must be a non-empty string");
+    }
+
+    return this.updateStage(id, { status });
+  }
+
  async getByProposalId(proposal_id) {
   const [rows] = await db.query(
     "SELECT * FROM contracts WHERE proposal_id = ?",
@@ -93,6 +101,16 @@ class BaseModel {
   );
   return rows;
 } 
+
+
+   async getDocument(proposal_id) {
+    const [rows] = await db.query(
+      "SELECT * FROM projects_document WHERE proposal_id = ?",
+      [proposal_id]
+    );
+    return rows;
+  }
+
 
 
 
