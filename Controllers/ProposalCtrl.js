@@ -8,7 +8,7 @@ class ProposalController {
     static async createProposal(req, res) {
         try {
             const {
-                job_name,                
+                job_name,
                 client_name,
                 job_type,
                 bid_due_date,
@@ -16,6 +16,7 @@ class ProposalController {
                 manager_id,
                 job_address,
                 apt_suite,
+                status,
                 tags
             } = req.body;
 
@@ -36,6 +37,7 @@ class ProposalController {
                 manager_id,
                 job_address,
                 apt_suite,
+                status,
                 tags: tagsArray
             };
 
@@ -55,38 +57,38 @@ class ProposalController {
         }
     }
 
-   
+
 
 
     // Get all Proposals
-  static async getAllProposals(req, res) {
-  try {
-    const proposals = await ProposalTable.getAllWithUsers();
+    static async getAllProposals(req, res) {
+        try {
+            const proposals = await ProposalTable.getAllWithUsers();
 
-    const formattedProposals = proposals.map(p => ({
-      ...p,
-      tags: Array.isArray(p.tags)
-        ? p.tags
-        : typeof p.tags === "string"
-        ? p.tags.split(",").map(t => t.trim())
-        : [],
-    //   user: {
-    //     id: p.user_id || null,
-    //     first_name: p.user_first_name || 'N/A',
-    //     last_name: p.user_last_name || 'N/A'
-    //   },
-    //   manager: {
-    //     id: p.manager_id || null,
-    //     first_name: p.manager_first_name || 'N/A',
-    //     last_name: p.manager_last_name || 'N/A'
-    //   }
-    }));
+            const formattedProposals = proposals.map(p => ({
+                ...p,
+                tags: Array.isArray(p.tags)
+                    ? p.tags
+                    : typeof p.tags === "string"
+                        ? p.tags.split(",").map(t => t.trim())
+                        : [],
+                //   user: {
+                //     id: p.user_id || null,
+                //     first_name: p.user_first_name || 'N/A',
+                //     last_name: p.user_last_name || 'N/A'
+                //   },
+                //   manager: {
+                //     id: p.manager_id || null,
+                //     first_name: p.manager_first_name || 'N/A',
+                //     last_name: p.manager_last_name || 'N/A'
+                //   }
+            }));
 
-    return successResponse(res, 200, "Proposals fetched successfully", formattedProposals);
-  } catch (error) {
-    return errorResponse(res, 500, error.message);
-  }
-}
+            return successResponse(res, 200, "Proposals fetched successfully", formattedProposals);
+        } catch (error) {
+            return errorResponse(res, 500, error.message);
+        }
+    }
 
 
 
@@ -121,7 +123,6 @@ class ProposalController {
         const { id } = req.params;
         const {
             job_name,
-            stage,
             client_name,
             job_type,
             bid_due_date,
@@ -129,6 +130,7 @@ class ProposalController {
             manager_id,
             job_address,
             apt_suite,
+            status,
             tags
         } = req.body;
 
@@ -142,7 +144,6 @@ class ProposalController {
 
             const updatedProposal = await ProposalTable.update(id, {
                 job_name,
-                stage,
                 client_name,
                 job_type,
                 bid_due_date,
@@ -150,6 +151,7 @@ class ProposalController {
                 manager_id,
                 job_address,
                 apt_suite,
+                status,
                 tags: tagsArray
             });
 
@@ -191,7 +193,57 @@ class ProposalController {
         }
     }
 
-     static async updateProposalStage(req, res) {
+    static async updateProposalStage(req, res) {
+        const { id } = req.params;
+        const { stage } = req.body;
+
+        try {
+            // 🔍 Log incoming values
+            console.log("🟡 Update Request Received");
+            console.log("➡️ ID from params:", id);
+            console.log("➡️ Stage from body:", stage);
+
+            // ✅ Validation
+            if (!stage || typeof stage !== "string" || stage.trsim() === "") {
+                console.warn("⚠️ Invalid stage value:", stage);
+                return errorResponse(res, 400, "Stage is required and must be a non-empty string");
+            }
+
+            const updateData = { stage };
+            console.log("🛠️ Data sent to updateStage:", updateData);
+
+            // ✅ Update stage using your method
+            const result = await ProposalTable.updateStage(id, updateData);
+            console.log("✅ MySQL update result:", result);
+
+            // Check if update affected any rows
+            if (!result || result.affectedRows === 0) {
+                console.warn("❌ Proposal not found or not updated for ID:", id);
+                return errorResponse(res, 404, "Proposal not found or not updated");
+            }
+
+            // ✅ Fetch updated proposal
+            const updatedProposal = await ProposalTable.getById(id);
+            console.log("📦 Updated Proposal Fetched:", updatedProposal);
+
+            // ✅ Format tags if needed
+            const formattedProposal = {
+                ...updatedProposal,
+                tags: Array.isArray(updatedProposal.tags)
+                    ? updatedProposal.tags
+                    : typeof updatedProposal.tags === "string"
+                        ? updatedProposal.tags.split(",").map(t => t.trim())
+                        : []
+            };
+
+            return successResponse(res, 200, "Proposal stage updated successfully", formattedProposal);
+        } catch (error) {
+            console.error("❌ Error in updateProposalStage:", error.message);
+            return errorResponse(res, 500, error.message);
+        }
+    }
+
+    static async updateProposalStage(req, res) {
         const { id } = req.params;
         const { stage } = req.body;
 
@@ -240,11 +292,12 @@ class ProposalController {
             return errorResponse(res, 500, error.message);
         }
     }
+
+  
+
+
+
 }
-
-
-
-
 
 
 export default ProposalController;
