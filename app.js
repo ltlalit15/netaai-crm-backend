@@ -20,6 +20,7 @@ import taxesRouter from "./Routers/taxesRouter.js";
 import subtaskRouter from "./Routers/subtaskRouter.js";
 import contractRouter from "./Routers/contractRouter.js";
 import JobPlanningRouter from "./Routers/JobPlanningRouter.js";
+import DocumentRouter from "./Routers/DocumentRouter.js";
 const router = Router();
 
 router.use("/api", AuthRouter);
@@ -43,6 +44,7 @@ router.use("/api", taxesRouter);
 router.use("/api", subtaskRouter);
 router.use("/api", contractRouter);
 router.use("/api", JobPlanningRouter);
+router.use("/api", DocumentRouter);
 
 
 export default router;
