@@ -106,6 +106,41 @@ class JobController {
             return errorResponse(res, 500, error.message);
         }
     }
+
+
+
+    static async getBudgetSummaryByProposalId(req, res) {
+        try {
+            const { proposal_id } = req.params;
+
+            if (!proposal_id || typeof proposal_id !== 'string' || proposal_id.trim() === '') {
+                return res.status(400).json({ error: "Proposal ID is required and must be a non-empty string" });
+            }
+
+            const jobPlanningRecords = await JobTable.getJobPlanningProposal(proposal_id);
+
+            if (!jobPlanningRecords || jobPlanningRecords.length === 0) {
+                return res.status(404).json({ error: "No job planning data found for this proposal ID" });
+            }
+
+            const total_budget = jobPlanningRecords.reduce((sum, record) => {
+                return sum + parseFloat(record.total_budget || 0);
+            }, 0).toFixed(2);
+
+            return res.status(200).json({
+                status: true,
+                message: "Budget summary fetched successfully",
+                job_count: jobPlanningRecords.length,
+                records: jobPlanningRecords,
+                proposal_id,
+                total_budget
+            });
+
+        } catch (error) {
+            console.error('Error in getBudgetSummaryByProposalId:', error);
+            return res.status(500).json({ error: "Internal Server Error" });
+        }
+    }
 }
 
 export default JobController;
