@@ -272,6 +272,19 @@ class BaseModel {
   }
 
 
+  async getJobPlanningProposal(proposal_id) {
+    if (!proposal_id || typeof proposal_id !== 'string' || proposal_id.trim() === '') {
+      throw new Error("Proposal ID is required and must be a non-empty string");
+    }
+
+    const [rows] = await db.query(
+      "SELECT * FROM job_planning WHERE proposal_id = ?",
+      [proposal_id]
+    );
+
+    return rows;
+  }
+
 
 
 
