@@ -18,5 +18,7 @@ router.patch("/job_planning/:id", JobController.updateJob);
 // Delete Job
 router.delete("/job_planning/:id", JobController.deleteJob);
 
+router.get("/job_planning/getBudgetSummaryByProposalId/:proposal_id", JobController.getBudgetSummaryByProposalId);
+
 export default router;
 
