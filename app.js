@@ -22,6 +22,7 @@ import contractRouter from "./Routers/contractRouter.js";
 import JobPlanningRouter from "./Routers/JobPlanningRouter.js";
 import DocumentRouter from "./Routers/DocumentRouter.js";
 import StatusRouter from "./Routers/StatusRouter.js";
+import DocumentRecordRouter from "./Routers/DocumentRecordRouter.js"
 const router = Router();
 
 router.use("/api", AuthRouter);
@@ -47,6 +48,7 @@ router.use("/api", contractRouter);
 router.use("/api", JobPlanningRouter);
 router.use("/api", DocumentRouter);
 router.use("/api", StatusRouter);
+router.use("/api", DocumentRecordRouter);
 
 
 export default router;
