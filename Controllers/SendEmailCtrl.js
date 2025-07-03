@@ -64,7 +64,7 @@ class SendEmailController {
       `;
 
       // 📧 Send email
-      await sendEmail(email, subject || "Proposal from Bon Bon", htmlContent);
+      await sendEmail(email, subject || "Proposal from BonBon", htmlContent);
 
       return res.status(200).json({
         success: true,
