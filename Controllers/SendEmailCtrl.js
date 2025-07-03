@@ -53,7 +53,7 @@ class SendEmailController {
                 <a href="${attachmentUrl}" style="display:inline-block;margin-top:8px;background:#0e76a8;color:#ffffff;padding:10px 20px;border-radius:5px;text-decoration:none;font-size:15px;">View Proposal</a>
               </div>
               ` : ''}
-              <p style="font-size:15px;color:#777;">Best regards,<br/>The Bon Bon Team</p>
+              <p style="font-size:15px;color:#777;">Best regards,<br/>The BonBon Team</p>
               <p style="margin-top:20px;font-size:13px;color:#999;">
                 For any questions, contact us at 
                 <a href="mailto:support@bonbon.com" style="color:#0e76a8;text-decoration:none;">support@bonbon.com</a>
