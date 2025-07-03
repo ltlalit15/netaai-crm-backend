@@ -28,6 +28,8 @@ class DocumentRecordController {
 
             // Parse line_items before sending response
             insertedData.line_items = JSON.parse(insertedData.line_items);
+            insertedData.client_id = String(insertedData.client_id);
+            insertedData.proposal_id = String(insertedData.proposal_id);
 
             return successResponse(res, 201, "Document created successfully", insertedData);
         } catch (error) {
@@ -93,6 +95,8 @@ class DocumentRecordController {
             await DocumentRecordTable.update(id, data);
             const updatedData = await DocumentRecordTable.getById(id);
             updatedData.line_items = JSON.parse(updatedData.line_items);
+            updatedData.client_id = String(updatedData.client_id);
+            updatedData.proposal_id = String(updatedData.proposal_id);
 
             return successResponse(res, 200, "Document updated", updatedData);
         } catch (error) {
