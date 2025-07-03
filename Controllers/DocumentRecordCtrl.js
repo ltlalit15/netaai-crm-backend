@@ -16,8 +16,8 @@ class DocumentRecordController {
             } = req.body;
 
             const data = {
-                client_id,
-                proposal_id,
+                client_id: String(client_id),
+                proposal_id: String(proposal_id),
                 start_date,
                 end_date,
                 line_items: JSON.stringify(line_items)
@@ -83,8 +83,8 @@ class DocumentRecordController {
             } = req.body;
 
             const data = {
-                client_id,
-                proposal_id,
+                client_id: String(client_id),
+                proposal_id: String(proposal_id),
                 start_date,
                 end_date,
                 line_items: JSON.stringify(line_items)
