@@ -285,6 +285,14 @@ class BaseModel {
     return rows;
   }
 
+   async getDocumentRecordByProposalId(proposal_id) {
+    const [rows] = await db.query(
+      "SELECT * FROM document_records WHERE proposal_id = ?",
+      [proposal_id]
+    );
+    return rows;
+  }
+
 
 
 
