@@ -111,6 +111,14 @@ class BaseModel {
     return rows;
   }
 
+   async findByEmailPropsal(email) {
+  const [rows] = await db.query(
+    "SELECT * FROM clients WHERE email = ?",
+    [email]
+  );
+  return rows.length > 0 ? rows[0] : null;
+}
+
 
 
 
