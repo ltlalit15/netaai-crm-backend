@@ -116,7 +116,7 @@ class SendProposalController {
     // }
 
 
-    static async sendProposalForSignature(req, res) {
+ static async sendProposalForSignature(req, res) {
   try {
     const { email, name } = req.body;
 
@@ -127,36 +127,36 @@ class SendProposalController {
     const signer_email = email.trim().toLowerCase();
     const signer_name = name || "Client";
 
-    // 📁 Upload attachment to Cloudinary
+    // ✅ Upload to Cloudinary
     let attachmentUrl = null;
-    if (req.files && req.files.attachment) {
+
+    if (req.files && req.files.attachment && req.files.attachment.tempFilePath) {
       const uploadResult = await cloudinary.uploader.upload(req.files.attachment.tempFilePath, {
         folder: "proposal_attachments",
         resource_type: "auto",
       });
       attachmentUrl = uploadResult.secure_url;
-    }
-
-    if (!attachmentUrl) {
+    } else {
       return errorResponse(res, 400, "Attachment upload failed or missing.");
     }
 
-    console.log("📩 Sending proposal for:", signer_email);
-    console.log("📄 PDF URL:", attachmentUrl);
-
-    // 📥 Download PDF from Cloudinary
-    const pdfResponse = await axios.get(attachmentUrl, {
-      responseType: "arraybuffer",
-    });
+    // ✅ Download PDF from Cloudinary
+    const pdfResponse = await axios.get(attachmentUrl, { responseType: "arraybuffer" });
     const fileBuffer = Buffer.from(pdfResponse.data, "binary");
 
-    // 🔐 Get JWT Token
-    const { accessToken, accountId } = await getJWTToken();
+    // ✅ Step 1: Get JWT token
+    const { accessToken, accountId, basePath } = await getJWTToken(); // Make sure basePath is returned too
+
+    // ✅ Step 2: Setup API client with token
+    const apiClient = new docusign.ApiClient();
+    apiClient.setBasePath(basePath || "https://demo.docusign.net/restapi");
+    apiClient.addDefaultHeader("Authorization", `Bearer ${accessToken}`);
+
     const envelopeApi = new docusign.EnvelopesApi(apiClient);
 
-    // 📦 Create envelope
+    // ✅ Step 3: Create Envelope
     const envDef = new docusign.EnvelopeDefinition();
-    envDef.emailSubject = `Please sign the proposal`;
+    envDef.emailSubject = "Please sign the proposal";
     envDef.status = "sent";
 
     const doc = new docusign.Document();
@@ -173,7 +173,7 @@ class SendProposalController {
       tabs: {
         signHereTabs: [
           {
-            anchorString: "**signature_here**", // Make sure this anchor is in PDF
+            anchorString: "**signature_here**",
             anchorUnits: "pixels",
             anchorYOffset: "10",
             anchorXOffset: "20",
@@ -185,14 +185,12 @@ class SendProposalController {
     envDef.documents = [doc];
     envDef.recipients = { signers: [signer] };
 
-    // 📨 Send envelope
+    // ✅ Step 4: Send envelope
     const result = await envelopeApi.createEnvelope(accountId, {
       envelopeDefinition: envDef,
     });
 
-    console.log("✅ Envelope sent:", result.envelopeId);
-
-    // 📝 Log envelope
+    // ✅ Step 5: Log & Email
     await axios.post("https://netaai-crm-backend-production-c306.up.railway.app/api/LogEnvelope", {
       client_id: null,
       email: signer_email,
@@ -201,7 +199,6 @@ class SendProposalController {
       sent_at: new Date().toISOString(),
     });
 
-    // ✉️ Notify client
     await axios.post("https://netaai-crm-backend-production-c306.up.railway.app/api/sendProposalEmail", {
       email: signer_email,
       subject: "Proposal Sent for Signature",
@@ -218,6 +215,7 @@ class SendProposalController {
     return errorResponse(res, 500, error.message || "An error occurred while sending the proposal.");
   }
 }
+
 
 
 
