@@ -187,7 +187,7 @@ class SendProposalController {
 
         // ✅ Step 5: Log envelope (optional)
         console.log("📝 Logging envelope to external API...");
-        await axios.post("https://hrb5wx2v-3002.inc1.devtunnels.ms/api/LogEnvelope", {
+        await axios.post("https://netaai-crm-backend-production-c306.up.railway.app/api/LogEnvelope", {
             client_id:null,
             email: signer_email,
             envelope_id: result.envelopeId,
@@ -196,7 +196,7 @@ class SendProposalController {
         });
 
         // ✅ Step 6: Notify client via email
-        await axios.post("https://hrb5wx2v-3002.inc1.devtunnels.ms/api/sendProposalEmail", {
+        await axios.post("https://netaai-crm-backend-production-c306.up.railway.app/api/sendProposalEmail", {
             email: signer_email,
             subject: "Proposal Sent for Signature",
             message: `Dear ${signer_name},\n\nYour proposal has been sent via DocuSign. Please check your inbox and sign the document.\n\nThank you!`,
