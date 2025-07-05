@@ -24,6 +24,7 @@ import DocumentRouter from "./Routers/DocumentRouter.js";
 import StatusRouter from "./Routers/StatusRouter.js";
 import DocumentRecordRouter from "./Routers/DocumentRecordRouter.js"
 import SendEmailRouter from "./Routers/SendEmailRouter.js"
+import SendProposalRouter from "./Routers/SendProposalRouter.js"
 const router = Router();
 
 router.use("/api", AuthRouter);
@@ -51,6 +52,7 @@ router.use("/api", DocumentRouter);
 router.use("/api", StatusRouter);
 router.use("/api", DocumentRecordRouter);
 router.use("/api", SendEmailRouter);
+router.use("/api", SendProposalRouter);
 
 
 export default router;
