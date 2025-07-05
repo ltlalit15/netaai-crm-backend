@@ -8,6 +8,14 @@ import { successResponse, errorResponse } from "../Utils/responseHandler.js";
 
 const ClientTable = new Controllers("clients");
 
+import cloudinary from "cloudinary";
+
+cloudinary.config({
+    cloud_name: 'dkqcqrrbp',
+    api_key: '418838712271323',
+    api_secret: 'p12EKWICdyHWx8LcihuWYqIruWQ'
+});
+
 class SendProposalController {
     // static async sendProposalForSignature(req, res) {
     //     try {
