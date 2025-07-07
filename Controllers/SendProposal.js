@@ -212,7 +212,7 @@ static async sendProposalForSignature(req, res) {
     await axios.post("https://hrb5wx2v-3002.inc1.devtunnels.ms/api/sendProposalEmail", {
       email: signer_email,
       subject: "Proposal Sent for Signature",
-      message: `Dear ${signer_name},\n\nYour proposal has been sent via DocuSign. Please check your inbox and sign the document.\n\nThank you!`,
+      message: `Dear ${signer_name},\n\nYour proposal has been sent via DocuSign. Please check your inbox spam folder, and sign the document.\n\nThank you!`,
     });
 
     return successResponse(res, 200, "Proposal sent for signature", {
