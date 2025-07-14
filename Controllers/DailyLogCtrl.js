@@ -19,7 +19,8 @@ static async createLog(req, res) {
       job_id,
       date,
       title,
-      notes
+      notes,
+      created_by
     } = req.body;
 
     let imageUrls = []; // Initialize an empty array to store image URLs
@@ -56,6 +57,7 @@ static async createLog(req, res) {
       date,
       title,
       notes,
+      created_by
       images // Store the images as a JSON string or null (column name is 'images')
     };
 
@@ -119,7 +121,8 @@ static async getLogById(req, res) {
       job_id,
       date,
       title,
-      notes
+      notes,
+      created_by
     } = req.body;
 
     let imageUrls = []; // Initialize an array to store image URLs
@@ -150,7 +153,8 @@ static async getLogById(req, res) {
       job_id,
       date,
       title,
-      notes
+      notes,
+      created_by
     };
 
     // ✅ Only add images if new ones were uploaded
