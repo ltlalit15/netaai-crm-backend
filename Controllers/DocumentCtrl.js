@@ -15,7 +15,7 @@ class DocumentController {
     //  CREATE
     static async createDocument(req, res) {
         try {
-            const { proposal_id, folder_name = null, title } = req.body;
+            const { proposal_id, folder_name = null, title, created_by } = req.body;
             let fileUrls = [];
 
             if (!proposal_id) {
@@ -39,6 +39,7 @@ class DocumentController {
                 proposal_id,
                 folder_name: folder_name === "" ? null : folder_name, // handle empty string
                 title: title === "" ? null : title,
+                created_by: created_by === "" ? null : created_by,
                 file_urls: fileUrls.length > 0 ? JSON.stringify(fileUrls) : null,
             };
 
@@ -82,7 +83,7 @@ class DocumentController {
     static async updateDocument(req, res) {
         try {
             const { id } = req.params;
-            const { proposal_id, folder_name = null, title } = req.body;
+            const { proposal_id, folder_name = null, title, created_by } = req.body;
             let fileUrls = [];
 
             if (!id || !proposal_id) {
@@ -117,6 +118,7 @@ class DocumentController {
                 proposal_id,
                 folder_name: folder_name === "" ? null : folder_name,
                 title: title === "" ? null : title,
+                created_by: created_by === "" ? null : created_by,
                 file_urls: finalFileUrls.length > 0 ? JSON.stringify(finalFileUrls) : null,
             };
 
