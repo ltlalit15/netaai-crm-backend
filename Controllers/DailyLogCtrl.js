@@ -57,7 +57,7 @@ static async createLog(req, res) {
       date,
       title,
       notes,
-      created_by
+      created_by,
       images // Store the images as a JSON string or null (column name is 'images')
     };
 
