@@ -7,11 +7,11 @@ class NotesController {
     // Create Note
     static async createNote(req, res) {
         try {
-            const { name, note } = req.body;
+            const { project_id, name, note } = req.body;
 
-            if (!name || !note) {
-                return errorResponse(res, 400, "Name and Note are required.");
-            }
+           // if (!name || !note) {
+           //     return errorResponse(res, 400, "Name and Note are required.");
+          //  }
 
             const data = {
                 name,
@@ -54,7 +54,7 @@ class NotesController {
     // Update Note
     static async updateNote(req, res) {
         const { id } = req.params;
-        const { name, note } = req.body;
+        const { project_id, name, note } = req.body;
 
         try {
             const updatedNote = await NotesTable.update(id, { name, note });
