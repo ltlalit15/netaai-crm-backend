@@ -14,6 +14,7 @@ class NotesController {
           //  }
 
             const data = {
+                project_id,
                 name,
                 note
             };
@@ -57,7 +58,7 @@ class NotesController {
         const { project_id, name, note } = req.body;
 
         try {
-            const updatedNote = await NotesTable.update(id, { name, note });
+            const updatedNote = await NotesTable.update(id, { project_id, name, note });
 
             if (!updatedNote) {
                 return errorResponse(res, 404, "Note not found");
