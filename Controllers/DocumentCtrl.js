@@ -32,44 +32,40 @@ class DocumentController {
         'png', 'jpg', 'jpeg', 'ocx', 'zip', 'ptx', 'txt'
       ];
 
-      const rawFileTypes = [
-        'pdf', 'doc', 'docx', 'ppt', 'pptx', 'xls', 'xlsx',
-        'ocx', 'zip', 'ptx', 'txt'
-      ];
-
       for (const file of files) {
-        let ext = path.extname(file.name || '').toLowerCase().replace('.', '');
-        console.log("Uploading file:", file.name);
-        console.log("Detected extension:", ext);
-        console.log("Mimetype:", file.mimetype);
-        console.log("Temp path:", file.tempFilePath);
+        const ext = path.extname(file.name || '').toLowerCase().replace('.', '');
+        const isImage = ['jpg', 'jpeg', 'png'].includes(ext);
+        const resourceType = isImage ? 'image' : 'raw'; // ✅ non-image = raw
+
+        console.log(`Uploading: ${file.name}`);
+        console.log(`Extension: ${ext}, Resource Type: ${resourceType}`);
 
         if (!allowedExtensions.includes(ext)) {
           return errorResponse(res, 400, `File type .${ext} is not allowed`);
         }
 
         try {
-          let uploadResult;
+          const uploadResult = await cloudinary.uploader.upload(file.tempFilePath, {
+            folder: 'projects_document',
+            resource_type: resourceType,
+            upload_preset: 'raw_uploads', // ✅ your working preset
+            use_filename: true,
+            unique_filename: false,
+          });
 
-          if (ext === 'zip') {
-            uploadResult = await cloudinary.uploader.upload_large(file.tempFilePath, {
-              folder: 'projects_document',
-              resource_type: 'raw',
-              use_filename: true,
-              unique_filename: false,
-            });
-          } else {
-            const isImage = ['jpg', 'jpeg', 'png'].includes(ext);
-            const resourceType = isImage ? 'image' : 'raw'; // force all non-images as raw
-
-            uploadResult = await cloudinary.uploader.upload(file.tempFilePath, {
-              folder: 'projects_document',
-              resource_type: resourceType,
-              use_filename: true,
-              unique_filename: false,
-            });
-          }
-
+          fileUrls.push({
+            url: uploadResult.secure_url,
+            original_name: file.name,
+            type: file.mimetype,
+            size: file.size,
+          });
+        } catch (uploadErr) {
+          console.error(`❌ Upload failed for ${file.name}:`, uploadErr);
+          const msg = uploadErr?.message || 'Unknown Cloudinary error';
+          return errorResponse(res, 500, `Upload failed for file ${file.name}: ${msg}`);
+        }
+      }
+    }
           fileUrls.push({
             url: uploadResult.secure_url,
             original_name: file.name,
