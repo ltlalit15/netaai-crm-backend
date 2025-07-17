@@ -24,33 +24,34 @@ class DocumentController {
             }
 
            if (req.files && req.files.fileUrls) {
-        let files = req.files.fileUrls;
-        if (!Array.isArray(files)) files = [files];
+      let files = req.files.fileUrls;
+      if (!Array.isArray(files)) files = [files];
 
-        const allowedExtensions = [
-          'pdf', 'doc', 'docx', 'ppt', 'pptx', 'xls', 'xlsx',
-          'png', 'jpg', 'jpeg', 'ocx', 'zip', 'ptx', 'txt'
-        ];
+      const allowedExtensions = [
+        'pdf', 'doc', 'docx', 'ppt', 'pptx', 'xls', 'xlsx',
+        'png', 'jpg', 'jpeg', 'ocx', 'zip', 'ptx', 'txt'
+      ];
 
-        const rawFileTypes = [
-          'pdf', 'doc', 'docx', 'ppt', 'pptx', 'xls', 'xlsx',
-          'ocx', 'zip', 'ptx', 'txt'
-        ];
+      const rawFileTypes = [
+        'pdf', 'doc', 'docx', 'ppt', 'pptx', 'xls', 'xlsx',
+        'ocx', 'zip', 'ptx', 'txt'
+      ];
 
-        for (const file of files) {
-          let ext = path.extname(file.name || '').toLowerCase().replace('.', '');
-          console.log("Uploading file:", file.name);
-          console.log("Detected extension:", ext);
-          console.log("Temp path:", file.tempFilePath);
+      for (const file of files) {
+        let ext = path.extname(file.name || '').toLowerCase().replace('.', '');
+        console.log("Uploading file:", file.name);
+        console.log("Detected extension:", ext);
+        console.log("Mimetype:", file.mimetype);
+        console.log("Temp path:", file.tempFilePath);
 
-          if (!allowedExtensions.includes(ext)) {
-            return errorResponse(res, 400, `File type .${ext} is not allowed`);
-          }
+        if (!allowedExtensions.includes(ext)) {
+          return errorResponse(res, 400, `File type .${ext} is not allowed`);
+        }
 
+        try {
           let uploadResult;
 
           if (ext === 'zip') {
-            // ✅ ZIP files: Use upload_large and force raw mode
             uploadResult = await cloudinary.uploader.upload_large(file.tempFilePath, {
               folder: 'projects_document',
               resource_type: 'raw',
@@ -58,7 +59,8 @@ class DocumentController {
               unique_filename: false,
             });
           } else {
-            const resourceType = rawFileTypes.includes(ext) ? 'raw' : 'auto';
+            const isImage = ['jpg', 'jpeg', 'png'].includes(ext);
+            const resourceType = isImage ? 'image' : 'raw'; // force all non-images as raw
 
             uploadResult = await cloudinary.uploader.upload(file.tempFilePath, {
               folder: 'projects_document',
@@ -72,10 +74,15 @@ class DocumentController {
             url: uploadResult.secure_url,
             original_name: file.name,
             type: file.mimetype,
-            size: file.size
+            size: file.size,
           });
+
+        } catch (uploadErr) {
+          console.error(`Failed to upload ${file.name}:`, uploadErr);
+          return errorResponse(res, 500, `Upload failed for file ${file.name}`);
         }
       }
+    }
             const data = {
                 proposal_id,
                 folder_name: folder_name === "" ? null : folder_name, // handle empty string
