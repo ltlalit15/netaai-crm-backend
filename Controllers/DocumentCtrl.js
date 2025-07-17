@@ -1,7 +1,7 @@
 import Controllers from "../Models/Model.js";
 import { successResponse, errorResponse } from "../Utils/responseHandler.js";
 import cloudinary from "cloudinary";
-const path = require('path');
+import path from "path";
 
 cloudinary.config({
     cloud_name: 'dkqcqrrbp',
