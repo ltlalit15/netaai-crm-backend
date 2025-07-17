@@ -33,22 +33,29 @@ static async createDocument(req, res) {
       ];
 
       for (const file of files) {
-        const ext = path.extname(file.name || '').toLowerCase().replace('.', '');
-        const isImage = ['jpg', 'jpeg', 'png'].includes(ext);
-        const resourceType = isImage ? 'image' : 'raw'; // ✅ non-image = raw
 
-        console.log(`Uploading: ${file.name}`);
-        console.log(`Extension: ${ext}, Resource Type: ${resourceType}`);
+        // ✅ STEP 1: Extension निकालने का तरीका सुधारा गया (space वाले नामों के लिए भी चलेगा)
+        let ext = '';
+        if (file.name && file.name.includes('.')) {
+          ext = file.name.split('.').pop().toLowerCase();
+        }
+
+        // ✅ STEP 2: Resource type तय करें — image हो तो image, नहीं तो raw
+        const isImage = ['jpg', 'jpeg', 'png'].includes(ext);
+        const resourceType = isImage ? 'image' : 'raw';
+
+        console.log(`Uploading: ${file.name} | ext: ${ext} | resourceType: ${resourceType}`);
 
         if (!allowedExtensions.includes(ext)) {
-          return errorResponse(res, 400, `File type .${ext} is not allowed`);
+          return errorResponse(res, 400, `File type .${ext} की अनुमति नहीं है`);
         }
 
         try {
+          // ✅ STEP 3: अब raw_uploads preset + resource_type सही सेट किया जा रहा है
           const uploadResult = await cloudinary.uploader.upload(file.tempFilePath, {
             folder: 'projects_document',
             resource_type: resourceType,
-            upload_preset: 'raw_uploads', // ✅ your working preset
+            upload_preset: 'raw_uploads',
             use_filename: true,
             unique_filename: false,
           });
@@ -59,6 +66,7 @@ static async createDocument(req, res) {
             type: file.mimetype,
             size: file.size,
           });
+
         } catch (uploadErr) {
           console.error(`❌ Upload failed for ${file.name}:`, uploadErr);
           const msg = uploadErr?.message || 'Unknown Cloudinary error';
@@ -66,7 +74,6 @@ static async createDocument(req, res) {
         }
       }
     }
-
     // Save to DB
     const data = {
       proposal_id,
