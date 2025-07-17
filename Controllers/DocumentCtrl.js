@@ -30,7 +30,7 @@ class DocumentController {
 
         const allowedExtensions = [
           'pdf', 'doc', 'docx', 'ppt', 'pptx', 'xls', 'xlsx',
-          'png', 'jpg', 'jpeg', 'ocx'
+          'png', 'jpg', 'jpeg', 'ocx', 'zip'
         ];
 
         for (const file of files) {
