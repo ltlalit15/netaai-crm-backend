@@ -22,8 +22,7 @@ class DocumentController {
                 return errorResponse(res, 400, "proposal_id and title are required");
             }
 
-             // File upload handler
-      if (req.files && req.files.fileUrls) {
+            if (req.files && req.files.fileUrls) {
         let files = req.files.fileUrls;
         if (!Array.isArray(files)) files = [files];
 
@@ -33,21 +32,17 @@ class DocumentController {
         ];
 
         for (const file of files) {
-          const fileName = file.name;
-          const ext = fileName.split('.').pop().toLowerCase();
+          const ext = path.extname(file.name).toLowerCase().replace('.', ''); // ✅ Safe extension check
 
-          // Reject unsupported file types
           if (!allowedExtensions.includes(ext)) {
             return errorResponse(res, 400, `File type .${ext} is not allowed`);
           }
 
-          // Upload to Cloudinary
           const uploadResult = await cloudinary.uploader.upload(file.tempFilePath, {
             folder: 'projects_document',
-            resource_type: 'auto',
+            resource_type: 'auto'
           });
 
-          // Save metadata
           fileUrls.push({
             url: uploadResult.secure_url,
             original_name: file.name,
@@ -56,7 +51,6 @@ class DocumentController {
           });
         }
       }
-
 
             const data = {
                 proposal_id,
