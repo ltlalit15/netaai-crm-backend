@@ -23,7 +23,8 @@ static async createDocument(req, res) {
       return errorResponse(res, 400, "proposal_id and title are required");
     }
 
-     if (req.files && req.files.fileUrls) {
+    
+    if (req.files && req.files.fileUrls) {
       let files = req.files.fileUrls;
       if (!Array.isArray(files)) files = [files];
 
@@ -33,14 +34,11 @@ static async createDocument(req, res) {
       ];
 
       for (const file of files) {
+        // ✅ STEP 1: Extension निकालना
+        const fileName = file.name || '';
+        const ext = path.extname(fileName).replace('.', '').toLowerCase();
 
-        // ✅ STEP 1: Extension detection with fallback
-        let ext = '';
-        if (file.name && file.name.lastIndexOf('.') > -1) {
-          ext = file.name.substring(file.name.lastIndexOf('.') + 1).toLowerCase();
-        }
-
-        // ✅ STEP 2: Image check
+        // ✅ STEP 2: Resource Type decide करना
         const isImage = ['jpg', 'jpeg', 'png'].includes(ext);
         const resourceType = isImage ? 'image' : 'raw';
 
@@ -49,20 +47,32 @@ static async createDocument(req, res) {
         console.log(`📦 Resource Type: ${resourceType}`);
         console.log(`📂 Temp Path: ${file.tempFilePath}`);
 
-        // ✅ STEP 3: Allowed extension check
+        // ✅ STEP 3: Extension check
         if (!allowedExtensions.includes(ext)) {
           return errorResponse(res, 400, `File type .${ext} की अनुमति नहीं है`);
         }
 
         try {
-          // ✅ STEP 4: Upload to Cloudinary
-          const uploadResult = await cloudinary.uploader.upload(file.tempFilePath, {
-            folder: 'projects_document',
-            resource_type: resourceType,
-           // upload_preset: 'raw_uploads',
-            use_filename: true,
-            unique_filename: false,
-          });
+          // ✅ STEP 4: Upload Logic — RAW files use upload_large
+          let uploadResult;
+
+          if (!isImage) {
+            // RAW: .txt, .docx, .zip, .pptx, etc.
+            uploadResult = await cloudinary.uploader.upload_large(file.tempFilePath, {
+              folder: 'projects_document',
+              resource_type: 'raw',
+              use_filename: true,
+              unique_filename: false,
+            });
+          } else {
+            // IMAGE
+            uploadResult = await cloudinary.uploader.upload(file.tempFilePath, {
+              folder: 'projects_document',
+              resource_type: 'image',
+              use_filename: true,
+              unique_filename: false,
+            });
+          }
 
           fileUrls.push({
             url: uploadResult.secure_url,
