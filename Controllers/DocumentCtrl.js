@@ -15,98 +15,85 @@ class DocumentController {
 
     //  CREATE
 static async createDocument(req, res) {
-  try {
-    const { proposal_id, folder_name = null, title, created_by } = req.body;
-    let fileUrls = [];
-
-    if (!proposal_id || !title) {
-      return errorResponse(res, 400, "proposal_id and title are required");
-    }
-
-    if (req.files && req.files.fileUrls) {
-      let files = req.files.fileUrls;
-      if (!Array.isArray(files)) files = [files];
-
-      const allowedExtensions = [
-        'pdf', 'doc', 'docx', 'ppt', 'pptx', 'xls', 'xlsx',
-        'png', 'jpg', 'jpeg', 'ocx', 'zip', 'ptx', 'txt'
-      ];
-
-      for (const file of files) {
-        const fileName = file.name || '';
-        const ext = path.extname(fileName).replace('.', '').toLowerCase();
-
-        const isImage = ['jpg', 'jpeg', 'png'].includes(ext);
-        const resourceType = isImage ? 'image' : 'raw';
-
-        console.log(`🟡 Uploading: ${file.name}`);
-        console.log(`📎 Extension: .${ext}`);
-        console.log(`📦 Resource Type: ${resourceType}`);
-        console.log(`📂 Temp Path: ${file.tempFilePath}`);
-
-        if (!allowedExtensions.includes(ext)) {
-          return errorResponse(res, 400, `File type .${ext} is not allowed`);
-        }
-
         try {
-          let uploadResult;
-          const uploadOptions = {
-            folder: 'projects_document',
-            use_filename: true,
-            unique_filename: false,
-            upload_preset: 'raw_uploads' // ✅ Critical line to make Cloudinary accept raw uploads
-          };
+            const { proposal_id, folder_name = null, title, created_by } = req.body;
+            let fileUrls = [];
 
-          if (isImage) {
-            uploadResult = await cloudinary.uploader.upload(file.tempFilePath, {
-              ...uploadOptions,
-              resource_type: 'image'
+            if (!proposal_id) {
+                return errorResponse(res, 400, "proposal_id and title are required");
+            }
+
+           if (req.files && req.files.fileUrls) {
+        let files = req.files.fileUrls;
+        if (!Array.isArray(files)) files = [files];
+
+        const allowedExtensions = [
+          'pdf', 'doc', 'docx', 'ppt', 'pptx', 'xls', 'xlsx',
+          'png', 'jpg', 'jpeg', 'ocx', 'zip'
+        ];
+
+        const rawFileTypes = [
+          'pdf', 'doc', 'docx', 'ppt', 'pptx', 'xls', 'xlsx',
+          'ocx', 'zip'
+        ];
+
+        for (const file of files) {
+          let ext = path.extname(file.name || '').toLowerCase().replace('.', '');
+          console.log("Uploading file:", file.name);
+          console.log("Detected extension:", ext);
+          console.log("Temp path:", file.tempFilePath);
+
+          if (!allowedExtensions.includes(ext)) {
+            return errorResponse(res, 400, `File type .${ext} is not allowed`);
+          }
+
+          let uploadResult;
+
+          if (ext === 'zip') {
+            // ✅ ZIP files: Use upload_large and force raw mode
+            uploadResult = await cloudinary.uploader.upload_large(file.tempFilePath, {
+              folder: 'projects_document',
+              resource_type: 'raw',
+              use_filename: true,
+              unique_filename: false,
             });
           } else {
-            uploadResult = await cloudinary.uploader.upload_large(file.tempFilePath, {
-              ...uploadOptions,
-              resource_type: 'raw'
+            const resourceType = rawFileTypes.includes(ext) ? 'raw' : 'auto';
+
+            uploadResult = await cloudinary.uploader.upload(file.tempFilePath, {
+              folder: 'projects_document',
+              resource_type: resourceType,
+              use_filename: true,
+              unique_filename: false,
             });
           }
 
-          // ✅ Push uploaded file info with URL
           fileUrls.push({
-            url: uploadResult.secure_url || '⛔ MISSING URL',
+            url: uploadResult.secure_url,
             original_name: file.name,
             type: file.mimetype,
             size: file.size
           });
-
-        } catch (uploadErr) {
-          console.error(`❌ Upload failed for ${file.name}:`, uploadErr);
-          const msg = uploadErr?.message || 'Unknown Cloudinary error';
-          return errorResponse(res, 500, `Upload failed for file ${file.name}: ${msg}`);
         }
       }
+            const data = {
+                proposal_id,
+                folder_name: folder_name === "" ? null : folder_name, // handle empty string
+                title: title === "" ? null : title,
+                created_by: created_by === "" ? null : created_by,
+                file_urls: fileUrls.length > 0 ? JSON.stringify(fileUrls) : null,
+            };
+
+            const result = await DocumentTable.create(data);
+            const inserted = await DocumentTable.getById(result.insertId);
+            inserted.file_urls = inserted.file_urls ? JSON.parse(inserted.file_urls) : [];
+
+            return successResponse(res, 201, "Document created", inserted);
+        } catch (error) {
+            console.error("Error in createDocument:", error);
+            return errorResponse(res, 500, error.message);
+        }
     }
-
-    const data = {
-      proposal_id,
-      folder_name: folder_name === "" ? null : folder_name,
-      title: title === "" ? null : title,
-      created_by: created_by === "" ? null : created_by,
-      file_urls: fileUrls.length > 0 ? JSON.stringify(fileUrls) : null,
-    };
-
-    const result = await DocumentTable.create(data);
-    const inserted = await DocumentTable.getById(result.insertId);
-    inserted.file_urls = inserted.file_urls ? JSON.parse(inserted.file_urls) : [];
-
-    console.log("🧾 Final file_urls response:", inserted.file_urls);
-
-    return successResponse(res, 201, "📁 Document created successfully", inserted);
-
-  } catch (error) {
-    console.error("🚨 Error in createDocument:", error);
-    return errorResponse(res, 500, error.message || "Internal server error");
-  }
-}
-
 
        //  GET ALL
     static async getAllDocuments(req, res) {
