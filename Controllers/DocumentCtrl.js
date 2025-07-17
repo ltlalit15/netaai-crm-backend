@@ -23,7 +23,6 @@ static async createDocument(req, res) {
       return errorResponse(res, 400, "proposal_id and title are required");
     }
 
-    
     if (req.files && req.files.fileUrls) {
       let files = req.files.fileUrls;
       if (!Array.isArray(files)) files = [files];
@@ -34,30 +33,24 @@ static async createDocument(req, res) {
       ];
 
       for (const file of files) {
-        // ✅ STEP 1: Extension निकालना
         const fileName = file.name || '';
         const ext = path.extname(fileName).replace('.', '').toLowerCase();
 
-        // ✅ STEP 2: Resource Type decide करना
         const isImage = ['jpg', 'jpeg', 'png'].includes(ext);
         const resourceType = isImage ? 'image' : 'raw';
 
         console.log(`🟡 Uploading: ${file.name}`);
-        console.log(`📎 Detected extension: .${ext}`);
+        console.log(`📎 Extension: .${ext}`);
         console.log(`📦 Resource Type: ${resourceType}`);
         console.log(`📂 Temp Path: ${file.tempFilePath}`);
 
-        // ✅ STEP 3: Extension check
         if (!allowedExtensions.includes(ext)) {
-          return errorResponse(res, 400, `File type .${ext} की अनुमति नहीं है`);
+          return errorResponse(res, 400, `File type .${ext} is not allowed`);
         }
 
         try {
-          // ✅ STEP 4: Upload Logic — RAW files use upload_large
           let uploadResult;
-
           if (!isImage) {
-            // RAW: .txt, .docx, .zip, .pptx, etc.
             uploadResult = await cloudinary.uploader.upload_large(file.tempFilePath, {
               folder: 'projects_document',
               resource_type: 'raw',
@@ -65,7 +58,6 @@ static async createDocument(req, res) {
               unique_filename: false,
             });
           } else {
-            // IMAGE
             uploadResult = await cloudinary.uploader.upload(file.tempFilePath, {
               folder: 'projects_document',
               resource_type: 'image',
@@ -88,7 +80,7 @@ static async createDocument(req, res) {
         }
       }
     }
-    // Save to DB
+
     const data = {
       proposal_id,
       folder_name: folder_name === "" ? null : folder_name,
@@ -101,6 +93,8 @@ static async createDocument(req, res) {
     const inserted = await DocumentTable.getById(result.insertId);
     inserted.file_urls = inserted.file_urls ? JSON.parse(inserted.file_urls) : [];
 
+    console.log("🧾 Final file_urls response:", inserted.file_urls);
+
     return successResponse(res, 201, "📁 Document created successfully", inserted);
 
   } catch (error) {
@@ -108,7 +102,6 @@ static async createDocument(req, res) {
     return errorResponse(res, 500, error.message || "Internal server error");
   }
 }
-
 
     //  GET ALL
     static async getAllDocuments(req, res) {
