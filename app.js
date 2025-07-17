@@ -26,6 +26,7 @@ import DocumentRecordRouter from "./Routers/DocumentRecordRouter.js"
 import SendEmailRouter from "./Routers/SendEmailRouter.js"
 import SendProposalRouter from "./Routers/SendProposalRouter.js"
 import LogEnvelopeRouter from "./Routers/LogEnvelopeRouter.js"
+import RecentActivityRouter from "./Routers/RecentActivityRouter.js"
 const router = Router();
 
 router.use("/api", AuthRouter);
@@ -55,6 +56,7 @@ router.use("/api", DocumentRecordRouter);
 router.use("/api", SendEmailRouter);
 router.use("/api", SendProposalRouter);
 router.use("/api", LogEnvelopeRouter);
+router.use("/api", RecentActivityRouter
 
 
 export default router;
