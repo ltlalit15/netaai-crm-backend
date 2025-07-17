@@ -19,16 +19,15 @@ class RecentActivityController {
       threeDaysAgo.setDate(today.getDate() - 3);
       threeDaysAgo.setHours(0, 0, 0, 0);
 
-      const startDate = threeDaysAgo.toISOString(); // e.g. "2025-07-14T00:00:00.000Z"
-      const endDate = today.toISOString();          // e.g. "2025-07-17T23:59:59.999Z"
+      const startDate = threeDaysAgo.toISOString();
+      const endDate = today.toISOString();
 
-      // SQL query with datetime BETWEEN for better accuracy and indexing
       const query = `
         SELECT * FROM ?? 
         WHERE created_at BETWEEN ? AND ?
       `;
 
-      // Fetch data from all tables in parallel
+      // Fetch all tables in parallel
       const [
         documentRecords,
         dailyLogs,
@@ -43,27 +42,32 @@ class RecentActivityController {
         JobPlanning.runCustomQuery(query, ["job_planning", startDate, endDate]),
       ]);
 
-      // Parse JSON string fields in document_records
+      // Parse JSON string fields
       const documentRecordsParsed = documentRecords.map(doc => ({
         ...doc,
         line_items: doc.line_items ? JSON.parse(doc.line_items) : [],
       }));
 
-      // Parse JSON string fields in projects_document
+      const dailyLogsParsed = dailyLogs.map(log => ({
+        ...log,
+        images: log.images ? JSON.parse(log.images) : [],
+      }));
+
       const projectDocsParsed = projectDocs.map(doc => ({
         ...doc,
         file_urls: doc.file_urls ? JSON.parse(doc.file_urls) : [],
         line_items: doc.line_items ? JSON.parse(doc.line_items) : [],
       }));
 
+      // Return clean, parsed data
       return successResponse(res, 200, "Recent entries (from 3 days ago till today) fetched successfully", {
         document_records: {
           total: documentRecordsParsed.length,
           records: documentRecordsParsed,
         },
         daily_logs: {
-          total: dailyLogs.length,
-          records: dailyLogs,
+          total: dailyLogsParsed.length,
+          records: dailyLogsParsed,
         },
         projects_document: {
           total: projectDocsParsed.length,
