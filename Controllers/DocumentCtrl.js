@@ -59,7 +59,7 @@ static async createDocument(req, res) {
           const uploadResult = await cloudinary.uploader.upload(file.tempFilePath, {
             folder: 'projects_document',
             resource_type: resourceType,
-            upload_preset: 'raw_uploads',
+           // upload_preset: 'raw_uploads',
             use_filename: true,
             unique_filename: false,
           });
