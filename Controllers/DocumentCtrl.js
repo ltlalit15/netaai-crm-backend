@@ -23,16 +23,7 @@ static async createDocument(req, res) {
       return errorResponse(res, 400, "proposal_id and title are required");
     }
 
-    if (req.files && req.files.fileUrls) {
-      let files = req.files.fileUrls;
-      if (!Array.isArray(files)) files = [files];
-
-      const allowedExtensions = [
-        'pdf', 'doc', 'docx', 'ppt', 'pptx', 'xls', 'xlsx',
-        'png', 'jpg', 'jpeg', 'ocx', 'zip', 'ptx', 'txt'
-      ];
-
-       for (const file of files) {
+    for (const file of files) {
         const fileName = file.name || '';
         const ext = path.extname(fileName).replace('.', '').toLowerCase();
 
@@ -50,34 +41,31 @@ static async createDocument(req, res) {
 
         try {
           let uploadResult;
+          const uploadOptions = {
+            folder: 'projects_document',
+            use_filename: true,
+            unique_filename: false,
+            upload_preset: 'raw_uploads' // ✅ Critical line to make Cloudinary accept raw uploads
+          };
 
-          if (!isImage) {
-            uploadResult = await cloudinary.uploader.upload_large(file.tempFilePath, {
-              folder: 'projects_document',
-              resource_type: 'raw',
-              use_filename: true,
-              unique_filename: false,
+          if (isImage) {
+            uploadResult = await cloudinary.uploader.upload(file.tempFilePath, {
+              ...uploadOptions,
+              resource_type: 'image'
             });
           } else {
-            uploadResult = await cloudinary.uploader.upload(file.tempFilePath, {
-              folder: 'projects_document',
-              resource_type: 'image',
-              use_filename: true,
-              unique_filename: false,
+            uploadResult = await cloudinary.uploader.upload_large(file.tempFilePath, {
+              ...uploadOptions,
+              resource_type: 'raw'
             });
           }
 
-          console.log("🌐 Cloudinary Upload Result:", uploadResult);
-
-          if (!uploadResult.secure_url) {
-            console.warn(`❗ secure_url missing for ${file.name}`);
-          }
-
+          // ✅ Push uploaded file info with URL
           fileUrls.push({
             url: uploadResult.secure_url || '⛔ MISSING URL',
             original_name: file.name,
             type: file.mimetype,
-            size: file.size,
+            size: file.size
           });
 
         } catch (uploadErr) {
@@ -87,8 +75,7 @@ static async createDocument(req, res) {
         }
       }
     }
-
-    console.log("📦 Final fileUrls array before DB insert:", fileUrls);
+    //console.log("📦 Final fileUrls array before DB insert:", fileUrls);
     const data = {
       proposal_id,
       folder_name: folder_name === "" ? null : folder_name,
