@@ -23,7 +23,7 @@ class DocumentController {
                 return errorResponse(res, 400, "proposal_id and title are required");
             }
 
-            // ✅ Handle uploaded files
+           // ✅ Handle uploaded files
       if (req.files && req.files.fileUrls) {
         let files = req.files.fileUrls;
         if (!Array.isArray(files)) files = [files];
@@ -33,18 +33,25 @@ class DocumentController {
           'png', 'jpg', 'jpeg', 'ocx', 'zip'
         ];
 
+        const rawFileTypes = [
+          'pdf', 'doc', 'docx', 'ppt', 'pptx', 'xls', 'xlsx',
+          'ocx', 'zip'
+        ];
+
         for (const file of files) {
-          // ✅ Bulletproof extension detection
-          let ext = path.extname(file.name || '').toLowerCase();
-          if (ext.startsWith('.')) ext = ext.slice(1); // remove leading dot
+          // Get and sanitize extension
+          let ext = path.extname(file.name || '').toLowerCase().replace('.', '');
+          console.log("Uploading file:", file.name, "Detected ext:", ext);
 
           if (!allowedExtensions.includes(ext)) {
             return errorResponse(res, 400, `File type .${ext} is not allowed`);
           }
 
+          const resourceType = rawFileTypes.includes(ext) ? 'raw' : 'auto';
+
           const uploadResult = await cloudinary.uploader.upload(file.tempFilePath, {
             folder: 'projects_document',
-            resource_type: 'auto',
+            resource_type: resourceType,
           });
 
           fileUrls.push({
