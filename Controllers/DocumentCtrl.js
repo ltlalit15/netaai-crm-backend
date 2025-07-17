@@ -14,16 +14,16 @@ const DocumentTable = new Controllers("projects_document");
 class DocumentController {
 
     //  CREATE
-    static async createDocument(req, res) {
-        try {
-            const { proposal_id, folder_name = null, title, created_by } = req.body;
-            let fileUrls = [];
+static async createDocument(req, res) {
+  try {
+    const { proposal_id, folder_name = null, title, created_by } = req.body;
+    let fileUrls = [];
 
-            if (!proposal_id) {
-                return errorResponse(res, 400, "proposal_id and title are required");
-            }
+    if (!proposal_id || !title) {
+      return errorResponse(res, 400, "proposal_id and title are required");
+    }
 
-           if (req.files && req.files.fileUrls) {
+    if (req.files && req.files.fileUrls) {
       let files = req.files.fileUrls;
       if (!Array.isArray(files)) files = [files];
 
@@ -66,37 +66,28 @@ class DocumentController {
         }
       }
     }
-          fileUrls.push({
-            url: uploadResult.secure_url,
-            original_name: file.name,
-            type: file.mimetype,
-            size: file.size,
-          });
 
-        } catch (uploadErr) {
-          console.error(`Failed to upload ${file.name}:`, uploadErr);
-          return errorResponse(res, 500, `Upload failed for file ${file.name}`);
-        }
-      }
-    }
-            const data = {
-                proposal_id,
-                folder_name: folder_name === "" ? null : folder_name, // handle empty string
-                title: title === "" ? null : title,
-                created_by: created_by === "" ? null : created_by,
-                file_urls: fileUrls.length > 0 ? JSON.stringify(fileUrls) : null,
-            };
+    // Save to DB
+    const data = {
+      proposal_id,
+      folder_name: folder_name === "" ? null : folder_name,
+      title: title === "" ? null : title,
+      created_by: created_by === "" ? null : created_by,
+      file_urls: fileUrls.length > 0 ? JSON.stringify(fileUrls) : null,
+    };
 
-            const result = await DocumentTable.create(data);
-            const inserted = await DocumentTable.getById(result.insertId);
-            inserted.file_urls = inserted.file_urls ? JSON.parse(inserted.file_urls) : [];
+    const result = await DocumentTable.create(data);
+    const inserted = await DocumentTable.getById(result.insertId);
+    inserted.file_urls = inserted.file_urls ? JSON.parse(inserted.file_urls) : [];
 
-            return successResponse(res, 201, "Document created", inserted);
-        } catch (error) {
-            console.error("Error in createDocument:", error);
-            return errorResponse(res, 500, error.message);
-        }
-    }
+    return successResponse(res, 201, "📁 Document created successfully", inserted);
+
+  } catch (error) {
+    console.error("🚨 Error in createDocument:", error);
+    return errorResponse(res, 500, error.message || "Internal server error");
+  }
+}
+
 
     //  GET ALL
     static async getAllDocuments(req, res) {
