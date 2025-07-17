@@ -23,8 +23,7 @@ class DocumentController {
                 return errorResponse(res, 400, "proposal_id and title are required");
             }
 
-           // ✅ Handle uploaded files
-      if (req.files && req.files.fileUrls) {
+           if (req.files && req.files.fileUrls) {
         let files = req.files.fileUrls;
         if (!Array.isArray(files)) files = [files];
 
@@ -39,20 +38,30 @@ class DocumentController {
         ];
 
         for (const file of files) {
-          // Get and sanitize extension
           let ext = path.extname(file.name || '').toLowerCase().replace('.', '');
-          console.log("Uploading file:", file.name, "Detected ext:", ext);
+          console.log("Uploading file:", file.name);
+          console.log("Detected extension:", ext);
 
           if (!allowedExtensions.includes(ext)) {
             return errorResponse(res, 400, `File type .${ext} is not allowed`);
           }
 
-          const resourceType = rawFileTypes.includes(ext) ? 'raw' : 'auto';
+          let uploadResult;
 
-          const uploadResult = await cloudinary.uploader.upload(file.tempFilePath, {
-            folder: 'projects_document',
-            resource_type: resourceType,
-          });
+          if (ext === 'zip') {
+            // ✅ Use upload_large for ZIP files
+            uploadResult = await cloudinary.uploader.upload_large(file.tempFilePath, {
+              folder: 'projects_document',
+              resource_type: 'raw',
+            });
+          } else {
+            const resourceType = rawFileTypes.includes(ext) ? 'raw' : 'auto';
+
+            uploadResult = await cloudinary.uploader.upload(file.tempFilePath, {
+              folder: 'projects_document',
+              resource_type: resourceType,
+            });
+          }
 
           fileUrls.push({
             url: uploadResult.secure_url,
@@ -62,8 +71,6 @@ class DocumentController {
           });
         }
       }
-
-
             const data = {
                 proposal_id,
                 folder_name: folder_name === "" ? null : folder_name, // handle empty string
