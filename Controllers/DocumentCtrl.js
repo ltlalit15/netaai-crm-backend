@@ -41,6 +41,7 @@ class DocumentController {
           let ext = path.extname(file.name || '').toLowerCase().replace('.', '');
           console.log("Uploading file:", file.name);
           console.log("Detected extension:", ext);
+          console.log("Temp path:", file.tempFilePath);
 
           if (!allowedExtensions.includes(ext)) {
             return errorResponse(res, 400, `File type .${ext} is not allowed`);
@@ -49,10 +50,12 @@ class DocumentController {
           let uploadResult;
 
           if (ext === 'zip') {
-            // ✅ Use upload_large for ZIP files
+            // ✅ ZIP files: Use upload_large and force raw mode
             uploadResult = await cloudinary.uploader.upload_large(file.tempFilePath, {
               folder: 'projects_document',
               resource_type: 'raw',
+              use_filename: true,
+              unique_filename: false,
             });
           } else {
             const resourceType = rawFileTypes.includes(ext) ? 'raw' : 'auto';
@@ -60,6 +63,8 @@ class DocumentController {
             uploadResult = await cloudinary.uploader.upload(file.tempFilePath, {
               folder: 'projects_document',
               resource_type: resourceType,
+              use_filename: true,
+              unique_filename: false,
             });
           }
 
