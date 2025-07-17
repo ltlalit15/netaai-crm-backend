@@ -29,12 +29,12 @@ class DocumentController {
 
         const allowedExtensions = [
           'pdf', 'doc', 'docx', 'ppt', 'pptx', 'xls', 'xlsx',
-          'png', 'jpg', 'jpeg', 'ocx', 'zip'
+          'png', 'jpg', 'jpeg', 'ocx', 'zip', 'ptx', 'txt'
         ];
 
         const rawFileTypes = [
           'pdf', 'doc', 'docx', 'ppt', 'pptx', 'xls', 'xlsx',
-          'ocx', 'zip'
+          'ocx', 'zip', 'ptx', 'txt'
         ];
 
         for (const file of files) {
