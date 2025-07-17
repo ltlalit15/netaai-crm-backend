@@ -32,7 +32,7 @@ static async createDocument(req, res) {
         'png', 'jpg', 'jpeg', 'ocx', 'zip', 'ptx', 'txt'
       ];
 
-      for (const file of files) {
+       for (const file of files) {
         const fileName = file.name || '';
         const ext = path.extname(fileName).replace('.', '').toLowerCase();
 
@@ -50,6 +50,7 @@ static async createDocument(req, res) {
 
         try {
           let uploadResult;
+
           if (!isImage) {
             uploadResult = await cloudinary.uploader.upload_large(file.tempFilePath, {
               folder: 'projects_document',
@@ -66,8 +67,14 @@ static async createDocument(req, res) {
             });
           }
 
+          console.log("🌐 Cloudinary Upload Result:", uploadResult);
+
+          if (!uploadResult.secure_url) {
+            console.warn(`❗ secure_url missing for ${file.name}`);
+          }
+
           fileUrls.push({
-            url: uploadResult.secure_url,
+            url: uploadResult.secure_url || '⛔ MISSING URL',
             original_name: file.name,
             type: file.mimetype,
             size: file.size,
@@ -81,6 +88,7 @@ static async createDocument(req, res) {
       }
     }
 
+    console.log("📦 Final fileUrls array before DB insert:", fileUrls);
     const data = {
       proposal_id,
       folder_name: folder_name === "" ? null : folder_name,
