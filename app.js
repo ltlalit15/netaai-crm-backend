@@ -56,7 +56,7 @@ router.use("/api", DocumentRecordRouter);
 router.use("/api", SendEmailRouter);
 router.use("/api", SendProposalRouter);
 router.use("/api", LogEnvelopeRouter);
-router.use("/api", RecentActivityRouter
+router.use("/api", RecentActivityRouter);
 
 
 export default router;
