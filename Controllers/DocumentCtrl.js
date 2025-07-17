@@ -23,7 +23,7 @@ static async createDocument(req, res) {
       return errorResponse(res, 400, "proposal_id and title are required");
     }
 
-    if (req.files && req.files.fileUrls) {
+     if (req.files && req.files.fileUrls) {
       let files = req.files.fileUrls;
       if (!Array.isArray(files)) files = [files];
 
@@ -34,24 +34,28 @@ static async createDocument(req, res) {
 
       for (const file of files) {
 
-        // ✅ STEP 1: Extension निकालने का तरीका सुधारा गया (space वाले नामों के लिए भी चलेगा)
+        // ✅ STEP 1: Extension detection with fallback
         let ext = '';
-        if (file.name && file.name.includes('.')) {
-          ext = file.name.split('.').pop().toLowerCase();
+        if (file.name && file.name.lastIndexOf('.') > -1) {
+          ext = file.name.substring(file.name.lastIndexOf('.') + 1).toLowerCase();
         }
 
-        // ✅ STEP 2: Resource type तय करें — image हो तो image, नहीं तो raw
+        // ✅ STEP 2: Image check
         const isImage = ['jpg', 'jpeg', 'png'].includes(ext);
         const resourceType = isImage ? 'image' : 'raw';
 
-        console.log(`Uploading: ${file.name} | ext: ${ext} | resourceType: ${resourceType}`);
+        console.log(`🟡 Uploading: ${file.name}`);
+        console.log(`📎 Detected extension: .${ext}`);
+        console.log(`📦 Resource Type: ${resourceType}`);
+        console.log(`📂 Temp Path: ${file.tempFilePath}`);
 
+        // ✅ STEP 3: Allowed extension check
         if (!allowedExtensions.includes(ext)) {
           return errorResponse(res, 400, `File type .${ext} की अनुमति नहीं है`);
         }
 
         try {
-          // ✅ STEP 3: अब raw_uploads preset + resource_type सही सेट किया जा रहा है
+          // ✅ STEP 4: Upload to Cloudinary
           const uploadResult = await cloudinary.uploader.upload(file.tempFilePath, {
             folder: 'projects_document',
             resource_type: resourceType,
