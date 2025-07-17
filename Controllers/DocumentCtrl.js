@@ -22,18 +22,33 @@ class DocumentController {
                 return errorResponse(res, 400, "proposal_id and title are required");
             }
 
-            if (req.files && req.files.fileUrls) {
-                let files = req.files.fileUrls;
-                if (!Array.isArray(files)) files = [files];
+             if (req.files && req.files.fileUrls) {
+        let files = req.files.fileUrls;
+        if (!Array.isArray(files)) files = [files];
 
-                for (const file of files) {
-                    const uploadResult = await cloudinary.uploader.upload(file.tempFilePath, {
-                        folder: 'projects_document',
-                        resource_type: 'auto',
-                    });
-                    fileUrls.push(uploadResult.secure_url);
-                }
-            }
+        for (const file of files) {
+          const ext = file.name.split('.').pop().toLowerCase();
+          const allowed = ['pdf', 'doc', 'docx', 'ppt', 'pptx', 'xls', 'xlsx', 'png', 'jpg', 'jpeg'];
+
+          if (!allowed.includes(ext)) {
+            return errorResponse(res, 400, `File type .${ext} is not allowed`);
+          }
+
+          // Upload to Cloudinary
+          const uploadResult = await cloudinary.uploader.upload(file.tempFilePath, {
+            folder: 'projects_document',
+            resource_type: 'auto', // Automatically handles document/image types
+          });
+
+          // Push metadata (you can simplify this to just `uploadResult.secure_url` if needed)
+          fileUrls.push({
+            url: uploadResult.secure_url,
+            original_name: file.name,
+            type: file.mimetype,
+            size: file.size
+          });
+        }
+      }
 
             const data = {
                 proposal_id,
