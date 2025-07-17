@@ -107,6 +107,32 @@ static async createDocument(req, res) {
   }
 }
 
+
+       //  GET ALL
+    static async getAllDocuments(req, res) {
+        try {
+            const all = await DocumentTable.getAll();
+            all.forEach(doc => doc.file_urls = doc.file_urls ? JSON.parse(doc.file_urls) : []);
+            return successResponse(res, 200, "All documents fetched", all);
+        } catch (err) {
+            return errorResponse(res, 500, err.message);
+        }
+    }
+
+    //  GET BY ID
+    static async getDocumentById(req, res) {
+        try {
+            const { id } = req.params;
+            const doc = await DocumentTable.getById(id);
+            if (!doc) return errorResponse(res, 404, "Document not found");
+
+            doc.file_urls = doc.file_urls ? JSON.parse(doc.file_urls) : [];
+            return successResponse(res, 200, "Document found", doc);
+        } catch (err) {
+            return errorResponse(res, 500, err.message);
+        }
+    }
+
     //  UPDATE (title or folder name only — file updates not handled here)
     static async updateDocument(req, res) {
         try {
