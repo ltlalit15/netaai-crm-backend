@@ -23,7 +23,16 @@ static async createDocument(req, res) {
       return errorResponse(res, 400, "proposal_id and title are required");
     }
 
-    for (const file of files) {
+    if (req.files && req.files.fileUrls) {
+      let files = req.files.fileUrls;
+      if (!Array.isArray(files)) files = [files];
+
+      const allowedExtensions = [
+        'pdf', 'doc', 'docx', 'ppt', 'pptx', 'xls', 'xlsx',
+        'png', 'jpg', 'jpeg', 'ocx', 'zip', 'ptx', 'txt'
+      ];
+
+      for (const file of files) {
         const fileName = file.name || '';
         const ext = path.extname(fileName).replace('.', '').toLowerCase();
 
@@ -75,7 +84,7 @@ static async createDocument(req, res) {
         }
       }
     }
-    //console.log("📦 Final fileUrls array before DB insert:", fileUrls);
+
     const data = {
       proposal_id,
       folder_name: folder_name === "" ? null : folder_name,
@@ -97,31 +106,6 @@ static async createDocument(req, res) {
     return errorResponse(res, 500, error.message || "Internal server error");
   }
 }
-
-    //  GET ALL
-    static async getAllDocuments(req, res) {
-        try {
-            const all = await DocumentTable.getAll();
-            all.forEach(doc => doc.file_urls = doc.file_urls ? JSON.parse(doc.file_urls) : []);
-            return successResponse(res, 200, "All documents fetched", all);
-        } catch (err) {
-            return errorResponse(res, 500, err.message);
-        }
-    }
-
-    //  GET BY ID
-    static async getDocumentById(req, res) {
-        try {
-            const { id } = req.params;
-            const doc = await DocumentTable.getById(id);
-            if (!doc) return errorResponse(res, 404, "Document not found");
-
-            doc.file_urls = doc.file_urls ? JSON.parse(doc.file_urls) : [];
-            return successResponse(res, 200, "Document found", doc);
-        } catch (err) {
-            return errorResponse(res, 500, err.message);
-        }
-    }
 
     //  UPDATE (title or folder name only — file updates not handled here)
     static async updateDocument(req, res) {
