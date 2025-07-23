@@ -17,7 +17,8 @@ class JobController {
                 labor_budget,
                 subcontractors_budget,
                 equipment_budget,
-                miscellanea_budget
+                miscellanea_budget,
+                notes
             } = req.body;
 
            
@@ -32,7 +33,8 @@ class JobController {
                 labor_budget,
                 subcontractors_budget,
                 equipment_budget,
-                miscellanea_budget
+                miscellanea_budget,
+                notes
             };
 
             const result = await JobTable.create(data);
