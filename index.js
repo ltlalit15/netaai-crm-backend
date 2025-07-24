@@ -55,7 +55,14 @@ app.use(fileUpload({
 }));
 
 
-app.use(cors({ origin: "*", credentials: true }));
+// ✅ CORS Configuration
+const corsOptions = {
+  origin: ['https://crm.bonbonteamapp.com'], // ✅ Allowed frontend
+  methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
+  credentials: true // ✅ Allow cookies/sessions
+};
+app.use(cors(corsOptions));
+
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(morgan("dev"));
 app.use(cookieParser());
