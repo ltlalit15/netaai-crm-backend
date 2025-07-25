@@ -127,6 +127,15 @@ class BaseModel {
   );
   return result;
 }
+
+  async getByProposalId(proposal_id) {
+  const [rows] = await db.query(
+    "SELECT * FROM document_records WHERE proposal_id = ?",
+    [proposal_id]
+  );
+  return rows[0]; // ✅ return the first record (object)
+}
+
  
 
   async getAllStudentsWithCourses() {
