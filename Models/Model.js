@@ -120,7 +120,14 @@ class BaseModel {
 }
 
 
-
+ async updateByProposalId(proposal_id, data) {
+  const [result] = await db.query(
+    "UPDATE document_records SET ? WHERE proposal_id = ?",
+    [data, proposal_id]
+  );
+  return result;
+}
+ 
 
   async getAllStudentsWithCourses() {
     const [result] = await db.query(`
