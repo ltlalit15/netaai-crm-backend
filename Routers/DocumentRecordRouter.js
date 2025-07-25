@@ -15,6 +15,8 @@ router.get("/documentsRecord/:id", DocumentRecordController.getDocumentByIdRecor
 // Update a document
 router.patch("/documentsRecord/:id", DocumentRecordController.updateDocumentRecord);
 
+router.patch("/documentsRecord/updateDocumentByProposalId/:proposal_id", DocumentRecordController.updateDocumentByProposalId);
+
 // Delete a document
 router.delete("/documentsRecord/:id", DocumentRecordController.deleteDocumentRecord);
 
