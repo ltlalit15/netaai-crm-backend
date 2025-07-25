@@ -112,7 +112,7 @@ class DocumentRecordController {
 
 
 
-    static async updateDocumentByProposalId(req, res) {
+   static async updateDocumentByProposalId(req, res) {
     try {
         const { proposal_id } = req.params;
         const {
@@ -130,11 +130,17 @@ class DocumentRecordController {
             line_items: JSON.stringify(line_items)
         };
 
-        // Assuming this method exists in your model
         await DocumentRecordTable.updateByProposalId(proposal_id, data);
 
         const updatedData = await DocumentRecordTable.getByProposalId(proposal_id);
-        updatedData.line_items = JSON.parse(updatedData.line_items);
+
+        // 🛡️ Safe JSON parse
+        try {
+            updatedData.line_items = JSON.parse(updatedData.line_items || '[]');
+        } catch (e) {
+            updatedData.line_items = [];
+        }
+
         updatedData.client_id = String(updatedData.client_id);
         updatedData.proposal_id = String(updatedData.proposal_id);
 
