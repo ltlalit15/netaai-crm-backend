@@ -110,6 +110,41 @@ class DocumentRecordController {
         }
     }
 
+
+
+    static async updateDocumentByProposalId(req, res) {
+    try {
+        const { proposal_id } = req.params;
+        const {
+            client_id,
+            start_date,
+            end_date,
+            line_items
+        } = req.body;
+
+        const data = {
+            client_id: String(client_id),
+            proposal_id: String(proposal_id),
+            start_date,
+            end_date,
+            line_items: JSON.stringify(line_items)
+        };
+
+        // Assuming this method exists in your model
+        await DocumentRecordTable.updateByProposalId(proposal_id, data);
+
+        const updatedData = await DocumentRecordTable.getByProposalId(proposal_id);
+        updatedData.line_items = JSON.parse(updatedData.line_items);
+        updatedData.client_id = String(updatedData.client_id);
+        updatedData.proposal_id = String(updatedData.proposal_id);
+
+        return successResponse(res, 200, "Document updated by proposal_id", updatedData);
+    } catch (error) {
+        return errorResponse(res, 500, error.message);
+    }
+}
+
+
     // Delete Document
     static async deleteDocumentRecord(req, res) {
         try {
